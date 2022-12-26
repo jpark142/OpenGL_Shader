@@ -290,7 +290,7 @@ unsigned char * Renderer::loadBMPRaw(const char * imagepath, unsigned int& outWi
 
 void Renderer::CreateParitcle(int count)
 {
-	int floatCount = count * (3 + 3) * 3 * 2; //(x, y, z, vx, vy, vz)
+	int floatCount = count * (3 + 3 + 1 + 1 + 1 + 1) * 3 * 2; //(x, y, z, vx, vy, vz, emit, life, amp, period)
 	float* particleVertices = new float[floatCount];
 	int vertexCount = count * 3 * 2;
 	int index = 0;
@@ -303,12 +303,22 @@ void Renderer::CreateParitcle(int count)
 		float randomValueVX = 0.f;
 		float randomValueVY = 0.f;
 		float randomValueVZ = 0.f;
-		randomValueX = ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
-		randomValueY = ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
+		float randomEmitTime = 0.f;
+		float randomLifeTime = 0.f;
+		float randomAmp = 0.f;
+		float randomPeriod = 0.f;
+
+		randomValueX = 0.f; //((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
+		randomValueY = 0.f; //((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
 		randomValueZ = 0.f;
-		randomValueVX = ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
-		randomValueVY = ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
+		randomValueVX = 1.f; // ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
+		randomValueVY = 0.f; // ((float)rand() / (float)RAND_MAX - 0.5f) * 2.f; //-1~1
 		randomValueVZ = 0.f;
+		randomEmitTime = ((float)rand() / (float)RAND_MAX) * 5.f;
+		randomLifeTime = 1.f; // ((float)rand() / (float)RAND_MAX) * 1.f;
+		randomAmp = ((float)rand() / (float)RAND_MAX) * 0.4f - 0.2f;
+		randomPeriod = ((float)rand() / (float)RAND_MAX) * 2.f;
+
 		//v0
 		particleVertices[index] = -particleSize / 2.f + randomValueX;
 		index++;
@@ -322,6 +332,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 		//v1
 		particleVertices[index] = particleSize / 2.f + randomValueX;
 		index++;
@@ -335,6 +353,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 		//v2
 		particleVertices[index] = particleSize / 2.f + randomValueX;
 		index++;
@@ -348,6 +374,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 		//v3
 		particleVertices[index] = -particleSize / 2.f + randomValueX;
 		index++;
@@ -361,6 +395,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 		//v4
 		particleVertices[index] = particleSize / 2.f + randomValueX;
 		index++;
@@ -374,6 +416,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 		//v5
 		particleVertices[index] = -particleSize / 2.f + randomValueX;
 		index++;
@@ -387,6 +437,14 @@ void Renderer::CreateParitcle(int count)
 		index++;
 		particleVertices[index] = 0.f;
 		index++; //Velocity XYZ
+		particleVertices[index] = randomEmitTime;
+		index++; //Emit Time
+		particleVertices[index] = randomLifeTime;
+		index++; //Lift Time
+		particleVertices[index] = randomAmp;
+		index++; //Amp
+		particleVertices[index] = randomPeriod;
+		index++; //Period
 
 	}
 	glGenBuffers(1, &m_VBOManyParticle);
@@ -510,24 +568,46 @@ void Renderer::Lecture3_Particle()
 	GLuint shader = m_Lecture3ParticleShader;
 	glUseProgram(shader);
 
+	// attrib
 	int attribPosition = glGetAttribLocation(shader, "a_Position");
 	glEnableVertexAttribArray(attribPosition);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOManyParticle);
-	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0); // x, y, z
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, 0); // x, y, z
 
 	int attribVelocity = glGetAttribLocation(shader, "a_Velocity");
 	glEnableVertexAttribArray(attribVelocity);
-	glVertexAttribPointer(attribVelocity, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (GLvoid*) (sizeof(float) * 3)); // vx, vy, vz
+	glVertexAttribPointer(attribVelocity, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (GLvoid*) (sizeof(float) * 3)); // vx, vy, vz
 
+	int attribEmitTime = glGetAttribLocation(shader, "a_EmitTime");
+	glEnableVertexAttribArray(attribEmitTime);
+	glVertexAttribPointer(attribEmitTime, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (GLvoid*)(sizeof(float) * 6));
+
+	int attribLifeTime = glGetAttribLocation(shader, "a_LifeTime");
+	glEnableVertexAttribArray(attribLifeTime);
+	glVertexAttribPointer(attribLifeTime, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (GLvoid*)(sizeof(float) * 7));
+
+	int attribAmp = glGetAttribLocation(shader, "a_Amp");
+	glEnableVertexAttribArray(attribAmp);
+	glVertexAttribPointer(attribAmp, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (GLvoid*)(sizeof(float) * 8));
+
+	int attribPeriod = glGetAttribLocation(shader, "a_Period");
+	glEnableVertexAttribArray(attribPeriod);
+	glVertexAttribPointer(attribPeriod, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (GLvoid*)(sizeof(float) * 9));
+	
+	// uniform
 	int uniformLocTime = glGetUniformLocation(shader, "u_Time");
 	glUniform1f(uniformLocTime, gTime);
+
+	int uniformAccel = glGetUniformLocation(shader, "u_Accel");
+	glUniform3f(uniformAccel, 0.f, 0.f, 0.f);
 
 	glDrawArrays(GL_TRIANGLES, 0, m_VBOManyParticleVertexCount);
 
 
-	gTime += 0.0001f;
+	gTime += 0.005f;
 	
-	if (gTime > 1.f) gTime = 0.f;
+	// reset
+	//if (gTime > 1.f) gTime = 0.f;
 
 
 	glDisableVertexAttribArray(attribPosition);
