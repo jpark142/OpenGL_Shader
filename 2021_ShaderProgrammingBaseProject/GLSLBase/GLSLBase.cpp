@@ -29,7 +29,8 @@ void RenderScene(void)
 	//g_Renderer->Test();
 	//g_Renderer->Lecture2();
 	//g_Renderer->Lecture3();
-	g_Renderer->Lecture3_Particle();
+	//g_Renderer->Lecture3_Particle();
+	g_Renderer->Lecture4_FSSandbox();
 
 	glutSwapBuffers();
 }

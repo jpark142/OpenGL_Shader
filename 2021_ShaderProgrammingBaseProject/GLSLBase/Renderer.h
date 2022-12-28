@@ -24,6 +24,7 @@ public:
 	void Lecture2();
 	void Lecture3();
 	void Lecture3_Particle();
+	void Lecture4_FSSandbox();
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -65,6 +66,9 @@ private:
 
 	GLuint m_VBOManyParticle = 0;
 	GLuint m_VBOManyParticleVertexCount = 0;
+
+	GLuint m_VBOSandbox = 0;
+	GLuint m_FSSandboxShader = 0;
 
 };
 
