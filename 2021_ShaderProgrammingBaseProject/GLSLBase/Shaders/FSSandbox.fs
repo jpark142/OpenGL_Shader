@@ -5,6 +5,9 @@ layout(location=0) out vec4 FragColor;
 in vec4 v_Color;
 const float PI = 3.141592;
 
+uniform vec3 u_Points[10];
+uniform float u_Time;
+
 vec4 CrossPattern()
 {
 	vec4 returnValue = vec4(1, 1, 1, 1);
@@ -37,7 +40,41 @@ vec4 DrawMultipleCircles()
 	return vec4(temp);
 }
 
+vec4 DrawCircles()
+{
+	vec4 returnColor = vec4(0);
+	for(int i = 0; i < 10; ++i){
+		float dis = distance(u_Points[i].xy, v_Color.xy);
+		float temp = sin(10 * (dis * 4 * PI - u_Time* 5 ));
+		
+		if(dis < u_Time)
+			returnColor += vec4(temp);
+	}
+	
+	return returnColor;
+	
+}
+
+vec4 RadarCircle()
+{
+	float d = distance(vec2(0.5, -0.1), v_Color.xy);
+	float sinValue = sin(2 * d * 2 * PI - u_Time*50);
+	sinValue = pow(sinValue, 16);
+	vec4 returnColor = vec4(sinValue);
+
+	for(int i = 0; i < 10; ++i){
+		float dis = distance(u_Points[i].xy, v_Color.xy);
+		float temp = sin((dis * 4 * PI));
+		temp = clamp(temp, 0, 1);
+		if(dis < 0.2)
+			returnColor += 0.2 * vec4(temp);
+	}
+
+	
+	return returnColor;
+}
+
 void main()
 {
-	FragColor = DrawMultipleCircles();
+	FragColor = RadarCircle();
 }
