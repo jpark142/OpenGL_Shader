@@ -27,6 +27,8 @@ public:
 	void Lecture4_FSSandbox();
 	void Lecture4_Raindrop();
 	void Lecture4_RadarCircle();
+	void Lecture5_LineSegment();
+	void Lecture5_FullRect();
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -36,6 +38,8 @@ private:
 	void CreateVertexBufferObjects(); 
 	unsigned char * Renderer::loadBMPRaw(const char * imagepath, unsigned int& outWidth, unsigned int& outHeight);
 	void CreateParitcle(int count);
+	
+	void CreateLine(int SegCount);
 
 	bool m_Initialized = false;
 	
@@ -72,5 +76,16 @@ private:
 	GLuint m_VBOSandbox = 0;
 	GLuint m_FSSandboxShader = 0;
 
+	GLuint m_VBOPack0_Pos = 0;
+	GLuint m_VBOPack0_Color= 0;
+	GLuint m_VBOPack1 = 0;
+
+	GLuint m_VBOLineSegment = 0;
+	GLuint m_VBOLineSegmentCount = 0;
+
+	GLuint m_LineSegmentShader = 0;
+
+	GLuint m_VBOFullRect = 0;
+	GLuint m_FullRectShader = 0;
 };
 

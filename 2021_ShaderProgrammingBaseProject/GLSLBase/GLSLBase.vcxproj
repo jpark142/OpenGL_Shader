@@ -175,10 +175,14 @@
   <ItemGroup>
     <None Include="Shaders\FSSandbox.fs" />
     <None Include="Shaders\FSSandbox.vs" />
+    <None Include="Shaders\FullRect.fs" />
+    <None Include="Shaders\FullRect.vs" />
     <None Include="Shaders\lecture3.fs" />
     <None Include="Shaders\lecture3.vs" />
     <None Include="Shaders\lecture3_particle.fs" />
     <None Include="Shaders\lecture3_particle.vs" />
+    <None Include="Shaders\LineSegment.fs" />
+    <None Include="Shaders\LineSegment.vs" />
     <None Include="Shaders\SolidRect.fs" />
     <None Include="Shaders\SolidRect.vs" />
   </ItemGroup>

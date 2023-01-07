@@ -53,6 +53,18 @@
     <None Include="Shaders\FSSandbox.vs">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shaders\LineSegment.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\LineSegment.vs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\FullRect.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\FullRect.vs">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
