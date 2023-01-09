@@ -32,14 +32,20 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	m_FSSandboxShader = CompileShaders("./Shaders/FSSandbox.vs", "./Shaders/FSSandbox.fs");
 	m_LineSegmentShader = CompileShaders("./Shaders/LineSegment.vs", "./Shaders/LineSegment.fs");
 	m_FullRectShader = CompileShaders("./Shaders/FullRect.vs", "./Shaders/FullRect.fs");
+	m_TextureSandboxShader = CompileShaders("./Shaders/TextureSandbox.vs", "./Shaders/TextureSandbox.fs");
 
 	//Create VBOs
 	CreateVertexBufferObjects();
 
 	//Create Partices
-	//CreateParitcle(1000);
+	CreateParitcle(1000);
 
-	//CreateLine(2000);
+	CreateLine(2000);
+
+	CreateTextures();
+
+	//Load Textures
+	m_TexRGB = CreatePngTexture("rgb.png");
 
 	//Initialize camera settings
 	m_v3Camera_Position = glm::vec3(0.f, 0.f, 1000.f);
@@ -184,22 +190,39 @@ void Renderer::CreateVertexBufferObjects()
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOPack1);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(lecture4_Pac1), lecture4_Pac1, GL_STATIC_DRAW);
 
-	float fullrectSize = 1.f;
+	rectSize = 1.f;
 	float lecture5_fullRect[]
 		=
 	{
 		// tri1
-		-fullrectSize, -fullrectSize, 0.0,
-		 fullrectSize,  fullrectSize, 0.0,
-		-fullrectSize,  fullrectSize, 0.0,
+		-rectSize, -rectSize, 0.0,
+		 rectSize,  rectSize, 0.0,
+		-rectSize,  rectSize, 0.0,
 		// tri2
-		-fullrectSize, -fullrectSize, 0.0,
-		 fullrectSize, -fullrectSize, 0.0,
-		 fullrectSize,  fullrectSize, 0.0,
+		-rectSize, -rectSize, 0.0,
+		 rectSize, -rectSize, 0.0,
+		 rectSize,  rectSize, 0.0,
 	};
 	glGenBuffers(1, &m_VBOFullRect);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOFullRect);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(lecture5_fullRect), lecture5_fullRect, GL_STATIC_DRAW);
+
+	rectSize = 0.5f;
+	float lecture6_TexPos[]
+		=
+	{
+		// tri1
+		-rectSize, -rectSize, 0.0, 0.f, 0.f,
+		 rectSize,  rectSize, 0.0, 1.f, 1.f,
+		-rectSize,  rectSize, 0.0, 0.f, 1.f,
+		// tri2
+		-rectSize, -rectSize, 0.0, 0.f, 0.f,
+		 rectSize, -rectSize, 0.0, 1.f, 0.f,
+		 rectSize,  rectSize, 0.0, 1.f, 1.f
+	};
+	glGenBuffers(1, &m_VBOTexSandbox);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTexSandbox);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lecture6_TexPos), lecture6_TexPos, GL_STATIC_DRAW);
 }
 
 void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -236,6 +259,7 @@ void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum S
 	// ShaderProgram 에 attach!!
 	glAttachShader(ShaderProgram, ShaderObj);
 }
+
 
 bool Renderer::ReadFile(char* filename, std::string *target)
 {
@@ -626,11 +650,35 @@ void Renderer::CreateLine(int SegCount)
 		lineVertices[index] = 0.f;
 		index++;
 	}
-	glGenBuffers(1, &m_VBOLineSegment);
+	glGenBuffers(1, &m_VBOLineSegment); // 아직 memory 할당x
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBOLineSegment);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * floatCount, lineVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * floatCount, lineVertices, GL_STATIC_DRAW); // main memory -> GPU memory
 	m_VBOLineSegmentCount = vertexCount;
 	delete[] lineVertices;
+}
+
+void Renderer::CreateTextures()
+{
+	static const GLulong checkerboard[] =
+	{
+		0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000,
+		0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
+		0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000,
+		0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
+		0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000,
+		0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
+		0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000,
+		0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF
+	};
+
+	glGenTextures(1, &m_TexChecker); // id 값 부여
+	glBindTexture(GL_TEXTURE_2D, m_TexChecker); 
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkerboard); // Data 이동 진행
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 }
 
 GLuint Renderer::CreatePngTexture(char * filePath)
@@ -935,3 +983,30 @@ void Renderer::Lecture5_FullRect()
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(attribPosition);
 }
+
+void Renderer::Lecture6_Texture()
+{
+	GLuint shader = m_TextureSandboxShader;
+	glUseProgram(shader);
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	int attribTex = glGetAttribLocation(shader, "a_TexCoord");
+	glEnableVertexAttribArray(attribTex);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTexSandbox);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+	glVertexAttribPointer(attribTex, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (GLvoid*)(sizeof(float)*3));
+
+	int uniformTex = glGetUniformLocation(shader, "u_TexSampler");
+	glUniform1i(uniformTex, 0);
+	glActiveTexture(GL_TEXTURE0); // 0번째 붙이기 준비완료
+	glBindTexture(GL_TEXTURE_2D, m_TexRGB);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisableVertexAttribArray(attribPosition);
+	glDisableVertexAttribArray(attribTex);
+
+	
+}
+
