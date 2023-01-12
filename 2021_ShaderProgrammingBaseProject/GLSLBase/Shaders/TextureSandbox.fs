@@ -111,7 +111,7 @@ vec4 MixTextures()
 	returnValue = texture(u_TexSampler, newTexCoord) * texture(u_TexSampler1, newTexCoord1);
 
 	return returnValue;			
-}
+} 
 
 void main()
 {

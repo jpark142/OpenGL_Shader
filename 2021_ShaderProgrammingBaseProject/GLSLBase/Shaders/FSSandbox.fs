@@ -46,10 +46,11 @@ vec4 DrawCircles()
 	vec4 returnColor = vec4(0);
 	for(int i = 0; i < 10; ++i){
 		float dis = distance(u_Points[i].xy, v_Color.xy);
-		float temp = sin(10 * (dis * 4 * PI - u_Time* 5 ));
+		float temp = sin(10 * (dis * 2 * PI - u_Time* 5 ));
 		
 		if(dis < u_Time)
 			returnColor += vec4(temp);
+
 	}
 	
 	return returnColor;
@@ -76,5 +77,5 @@ vec4 RadarCircle()
 
 void main()
 {
-	FragColor = RadarCircle() * v_ColorOverride;
+	FragColor = DrawCircles() * v_ColorOverride;
 }

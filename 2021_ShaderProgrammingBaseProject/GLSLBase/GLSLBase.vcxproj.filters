@@ -71,6 +71,24 @@
     <None Include="Shaders\TextureSandbox.vs">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shaders\DummyMesh.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\DummyMesh.vs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\FullRectTexture.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\FullRectTexture.vs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\Radar.fs">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shaders\Radar.vs">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

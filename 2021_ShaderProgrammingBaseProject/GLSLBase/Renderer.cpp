@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cassert>
 
-
 Renderer::Renderer(int windowSizeX, int windowSizeY)
 {
 	//default settings
@@ -30,9 +29,12 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	m_Lecture3Shader = CompileShaders("./Shaders/lecture3.vs", "./Shaders/lecture3.fs");
 	m_Lecture3ParticleShader = CompileShaders("./Shaders/lecture3_particle.vs", "./Shaders/lecture3_particle.fs");
 	m_FSSandboxShader = CompileShaders("./Shaders/FSSandbox.vs", "./Shaders/FSSandbox.fs");
+	m_RadarShader = CompileShaders("./Shaders/Radar.vs", "./Shaders/Radar.fs");
 	m_LineSegmentShader = CompileShaders("./Shaders/LineSegment.vs", "./Shaders/LineSegment.fs");
 	m_FullRectShader = CompileShaders("./Shaders/FullRect.vs", "./Shaders/FullRect.fs");
 	m_TextureSandboxShader = CompileShaders("./Shaders/TextureSandbox.vs", "./Shaders/TextureSandbox.fs");
+	m_DummyMeshShader = CompileShaders("./Shaders/DummyMesh.vs", "./Shaders/DummyMesh.fs");
+	m_FullRectTexShader = CompileShaders("./Shaders/FullRectTexture.vs", "./Shaders/FullRectTexture.fs");
 
 	//Create VBOs
 	CreateVertexBufferObjects();
@@ -40,12 +42,16 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	//Create Partices
 	CreateParitcle(1000);
 
-	CreateLine(2000);
+	CreateLine(3000);
 
 	CreateTextures();
 
 	//Load Textures
 	m_TexRGB = CreatePngTexture("rgb.png");
+
+	CreateDummyMesh();
+
+	CreateFBOs();
 
 	//Initialize camera settings
 	m_v3Camera_Position = glm::vec3(0.f, 0.f, 1000.f);
@@ -681,6 +687,186 @@ void Renderer::CreateTextures()
 
 }
 
+void Renderer::CreateDummyMesh()
+{
+	float basePosX = -0.5f;
+	float basePosY = -0.5f;
+	float targetPosX = 0.5f;
+	float targetPosY = 0.5f;
+
+	int pointCountX = 32;
+	int pointCountY = 32;
+
+	float width = targetPosX - basePosX;
+	float height = targetPosY - basePosY;
+
+	float* point = new float[pointCountX * pointCountY * 2];
+	float* vertices = new float[(pointCountX - 1) * (pointCountY - 1) * 2 * 3 * 3];
+	m_DummyVertexCount = (pointCountX - 1) * (pointCountY - 1) * 2 * 3;
+
+	//Prepare points
+	for (int x = 0; x < pointCountX; x++)
+	{
+		for (int y = 0; y < pointCountY; y++)
+		{
+			point[(y * pointCountX + x) * 2 + 0] = basePosX + width * (x / (float)(pointCountX - 1));
+			point[(y * pointCountX + x) * 2 + 1] = basePosY + height * (y / (float)(pointCountY - 1));
+		}
+	}
+
+	//Make triangles
+	int vertIndex = 0;
+	for (int x = 0; x < pointCountX - 1; x++)
+	{
+		for (int y = 0; y < pointCountY - 1; y++)
+		{
+			//Triangle part 1
+			vertices[vertIndex] = point[(y * pointCountX + x) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[(y * pointCountX + x) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + (x + 1)) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + (x + 1)) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + x) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + x) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+
+			//Triangle part 2
+			vertices[vertIndex] = point[(y * pointCountX + x) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[(y * pointCountX + x) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+			vertices[vertIndex] = point[(y * pointCountX + (x + 1)) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[(y * pointCountX + (x + 1)) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + (x + 1)) * 2 + 0];
+			vertIndex++;
+			vertices[vertIndex] = point[((y + 1) * pointCountX + (x + 1)) * 2 + 1];
+			vertIndex++;
+			vertices[vertIndex] = 0.f;
+			vertIndex++;
+		}
+	}
+
+	glGenBuffers(1, &m_VBODummyMesh);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBODummyMesh);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (pointCountX - 1) * (pointCountY - 1) * 2 * 3 * 3, vertices, GL_STATIC_DRAW);
+
+}
+
+
+void Renderer::SetFBO(GLuint* tex, GLuint* rbd_id, GLuint* fbo_id)
+{
+	glGenTextures(1, tex);
+	glBindTexture(GL_TEXTURE_2D, *tex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	glGenRenderbuffers(1, rbd_id);
+	glBindRenderbuffer(GL_RENDERBUFFER, *rbd_id);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glGenFramebuffers(1, fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, *fbo_id);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *tex, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, *rbd_id);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "error!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::CreateFBOs()
+{
+	SetFBO(&m_FBOTexture0, &m_RBDepth0, &m_FBO0);
+	SetFBO(&m_FBOTexture1, &m_RBDepth1, &m_FBO1);
+	SetFBO(&m_FBOTexture2, &m_RBDepth2, &m_FBO2);
+	SetFBO(&m_FBOTexture3, &m_RBDepth3, &m_FBO3);
+	SetFBO(&m_FBOTexture4, &m_RBDepth4, &m_FBO4);
+	SetFBO(&m_FBOTexture5, &m_RBDepth5, &m_FBO5);
+
+}
+
+auto start = std::chrono::high_resolution_clock::now();
+
+void Renderer::FBORender()
+{
+	m_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+
+	// 1. bind framebuffer object
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO0);
+	// 2. set viewport
+	glViewport(0, 0, 512, 512);
+	// 3. clear
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// 4. rendering
+	Lecture3_Particle();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO1);
+	glViewport(0, 0, 512, 512);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Lecture6_Texture();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO2);
+	glViewport(0, 0, 512, 512);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Lecture4_RadarCircle();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO3);
+	glViewport(0, 0, 512, 512);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Lecture9_DummyMesh();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO4);
+	glViewport(0, 0, 512, 512);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Lecture5_LineSegment();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO5);
+	glViewport(0, 0, 512, 512);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Lecture4_Raindrop();
+
+	// 5. restore framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// 6. draw textures
+	glViewport(0, 0, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture0);
+	glViewport(250, 0, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture1);
+	glViewport(0, 250, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture2);
+	glViewport(250, 250, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture3);
+	glViewport(500, 0, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture4);
+	glViewport(500, 250, 250, 250);
+	DrawFullScreenTexture(m_FBOTexture5);
+}
+
+
 GLuint Renderer::CreatePngTexture(char * filePath)
 {
 	//Load Pngs: Load file and decode image.
@@ -759,8 +945,12 @@ void Renderer::Lecture2()
 }
 
 float gTime = 0.f;
+
+
+
 void Renderer::Lecture3()
 {
+	
 	GLuint shader = m_Lecture3Shader;
 	glUseProgram(shader);
 
@@ -834,7 +1024,7 @@ void Renderer::Lecture3_Particle()
 	
 	// uniform
 	int uniformLocTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformLocTime, gTime);
+	glUniform1f(uniformLocTime, (float)m_duration.count() / 1000);
 
 	int uniformAccel = glGetUniformLocation(shader, "u_Accel");
 	glUniform3f(uniformAccel, 0.f, 0.f, 0.f);
@@ -842,7 +1032,7 @@ void Renderer::Lecture3_Particle()
 	glDrawArrays(GL_TRIANGLES, 0, m_VBOManyParticleVertexCount);
 
 
-	gTime += 0.005f;
+	//gTime += 0.005f;
 	
 	// reset
 	//if (gTime > 1.f) gTime = 0.f;
@@ -893,9 +1083,9 @@ void Renderer::Lecture4_Raindrop()
 	int uniformPoints = glGetUniformLocation(shader, "u_Points");
 	glUniform3fv(uniformPoints, 10, g_points);
 	int uniformTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformTime, gTime);
+	glUniform1f(uniformTime, (float)m_duration.count() / 5000);
 
-	gTime += 0.001f;
+	//gTime += 0.001f;
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -904,7 +1094,7 @@ void Renderer::Lecture4_Raindrop()
 
 void Renderer::Lecture4_RadarCircle()
 {
-	GLuint shader = m_FSSandboxShader;
+	GLuint shader = m_RadarShader;
 	glUseProgram(shader);
 
 	//int attribPosition = glGetAttribLocation(shader, "a_Position");
@@ -936,9 +1126,9 @@ void Renderer::Lecture4_RadarCircle()
 	int uniformPoints = glGetUniformLocation(shader, "u_Points");
 	glUniform3fv(uniformPoints, 10, g_points);
 	int uniformTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformTime, gTime);
+	glUniform1f(uniformTime, (float)m_duration.count() / 5000);
 
-	gTime += 0.001f;
+	//gTime += 0.001f;
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -956,9 +1146,9 @@ void Renderer::Lecture5_LineSegment()
 	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
 	int uniformTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformTime, gTime);
+	glUniform1f(uniformTime, (float)m_duration.count() / 100);
 
-	gTime += 0.01f;
+	//gTime += 0.01f;
 
 	glDrawArrays(GL_LINE_STRIP, 0, m_VBOLineSegmentCount);
 	glDisableVertexAttribArray(attribPosition);
@@ -976,9 +1166,9 @@ void Renderer::Lecture5_FullRect()
 	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 
 	int uniformTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformTime, gTime);
+	glUniform1f(uniformTime, (float)m_duration.count() / 100);
 
-	gTime += 0.01f;
+	//gTime += 0.01f;
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(attribPosition);
@@ -1009,14 +1199,53 @@ void Renderer::Lecture6_Texture()
 	glBindTexture(GL_TEXTURE_2D, m_TexChecker);
 
 	int uniformTime = glGetUniformLocation(shader, "u_Time");
-	glUniform1f(uniformTime, gTime);
+	glUniform1f(uniformTime, (float)m_duration.count() / 1000);
 
-	gTime += 0.01f;
+	//gTime += 0.01f;
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(attribPosition);
 	glDisableVertexAttribArray(attribTex);
-
-	
 }
+
+void Renderer::Lecture9_DummyMesh()
+{
+	GLuint shader = m_DummyMeshShader;
+	glUseProgram(shader);
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBODummyMesh);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	
+	
+	int uniformTime = glGetUniformLocation(shader, "u_Time");
+	glUniform1f(uniformTime, (float)m_duration.count()/100 );
+
+	//gTime += 0.05f;
+
+	glDrawArrays(GL_LINE_STRIP, 0, m_DummyVertexCount);
+	glDisableVertexAttribArray(attribPosition);
+}
+
+void Renderer::DrawFullScreenTexture(GLuint texID)
+{	
+	GLuint shader = m_FullRectTexShader;
+	glUseProgram(shader);
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOFullRect);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
+	int uniformSampler = glGetUniformLocation(shader, "u_Sampler");
+	glUniform1i(uniformSampler, 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisableVertexAttribArray(attribPosition);
+}
+
 

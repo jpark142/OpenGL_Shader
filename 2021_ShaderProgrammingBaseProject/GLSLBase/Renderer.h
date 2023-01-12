@@ -10,6 +10,7 @@
 #include "Dependencies\glm/glm.hpp"
 #include "Dependencies\glm/gtc/matrix_transform.hpp"
 #include "Dependencies\glm/gtx/euler_angles.hpp"
+#include <chrono>
 
 class Renderer
 {
@@ -30,6 +31,12 @@ public:
 	void Lecture5_LineSegment();
 	void Lecture5_FullRect();
 	void Lecture6_Texture();
+	void Lecture9_DummyMesh();
+	void FBORender();
+
+private:
+	// time
+	std::chrono::duration<long long, std::milli> m_duration;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -43,6 +50,13 @@ private:
 	void CreateLine(int SegCount);
 
 	void CreateTextures();
+
+	void CreateDummyMesh();
+
+	void CreateFBOs();
+	void SetFBO(GLuint* tex, GLuint* rbd_id, GLuint* fbo_id);
+
+	void DrawFullScreenTexture(GLuint texID);
 
 	bool m_Initialized = false;
 	
@@ -78,6 +92,7 @@ private:
 
 	GLuint m_VBOSandbox = 0;
 	GLuint m_FSSandboxShader = 0;
+	GLuint m_RadarShader = 0;
 
 	GLuint m_VBOPack0_Pos = 0;
 	GLuint m_VBOPack0_Color= 0;
@@ -96,5 +111,44 @@ private:
 	GLuint m_VBOTexSandbox = 0;
 
 	GLuint m_TexRGB = 0;
+
+	GLuint m_DummyVertexCount = 0;
+	GLuint m_VBODummyMesh = 0;
+	GLuint m_DummyMeshShader = 0;
+
+	GLuint m_FBOTexture0 = 0;
+	GLuint m_RBDepth0 = 0;
+	GLuint m_FBO0 = 0;
+
+	GLuint m_FBOTexture1 = 0;
+	GLuint m_RBDepth1 = 0;
+	GLuint m_FBO1 = 0;
+
+	GLuint m_FBOTexture2 = 0;
+	GLuint m_RBDepth2 = 0;
+	GLuint m_FBO2 = 0;
+	
+	GLuint m_FBOTexture3 = 0;
+	GLuint m_RBDepth3 = 0;
+	GLuint m_FBO3 = 0;
+	
+	GLuint m_FBOTexture4 = 0;
+	GLuint m_RBDepth4 = 0;
+	GLuint m_FBO4 = 0;
+	
+	GLuint m_FBOTexture5 = 0;
+	GLuint m_RBDepth5 = 0;	
+	GLuint m_FBO5 = 0;
+
+	GLuint m_FBOTexture6 = 0;
+	GLuint m_RBDepth6 = 0;
+	GLuint m_FBO6 = 0;
+
+	GLuint m_FBOTexture7 = 0;
+	GLuint m_RBDepth7 = 0;
+	GLuint m_FBO7 = 0;
+
+	GLuint m_FullRectTexShader = 0;
+
 };
 

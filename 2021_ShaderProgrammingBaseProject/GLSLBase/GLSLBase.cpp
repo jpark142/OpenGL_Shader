@@ -17,7 +17,7 @@ but WITHOUT ANY WARRANTY.
 
 Renderer *g_Renderer = NULL;
 
-int g_WindowSizeX = 500;
+int g_WindowSizeX = 750;
 int g_WindowSizeY = 500;
 
 void RenderScene(void)
@@ -35,7 +35,9 @@ void RenderScene(void)
 	//g_Renderer->Lecture4_RadarCircle();
 	//g_Renderer->Lecture5_LineSegment();
 	//g_Renderer->Lecture5_FullRect();
-	g_Renderer->Lecture6_Texture();
+	//g_Renderer->Lecture6_Texture();
+	//g_Renderer->Lecture9_DummyMesh();
+	g_Renderer->FBORender();
 
 	glutSwapBuffers();
 }
